@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculus in Food Security: Broiler Growth Rate</title>
+    
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- MathJax for rendering mathematical formulas -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .math-container { overflow-x: auto; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 min-h-screen p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="mb-8 text-center md:text-left">
+            <h1 class="text-3xl md:text-4xl font-bold text-emerald-800 tracking-tight">
+                Calculus in Food Security: Optimizing Broiler Harvest
+            </h1>
+            <p class="text-gray-600 mt-2 text-lg">
+                Interactive Bioscience Dashboard for SFM Majors | Context: Malaysian Poultry Sector
+            </p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Left Column: Context and Mathematics -->
+            <div class="lg:col-span-1 space-y-6">
+                
+                <!-- Bioscience Problem Card -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-emerald-100">
+                    <h2 class="text-xl font-semibold text-emerald-700 mb-3 flex items-center">
+                        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        The Bioscience Problem
+                    </h2>
+                    <p class="text-sm text-gray-600 mb-3 text-justify">
+                        In Malaysia, poultry is a primary protein source. Ensuring continuous and efficient broiler chicken supply is vital for national <strong>Food Security</strong>. 
+                    </p>
+                    <p class="text-sm text-gray-600 mb-3 text-justify">
+                        Farmers need to know exactly when a chicken reaches its peak growth rate to optimize feed efficiency. Feeding a chicken past its peak growth wastes resources, while harvesting too early yields less meat.
+                    </p>
+                    <p class="text-xs text-gray-500 italic mt-4">
+                        * Data modeled using logistic growth parameters representative of tropical Cobb 500 broilers, aligning with guidelines from the <strong>Department of Veterinary Services (DVS) Malaysia</strong> and the <strong>Cobb-Vantress Broiler Performance Guide</strong>.
+                    </p>
+                </div>
+
+                <!-- Mathematical Model Card -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-emerald-100">
+                    <h2 class="text-xl font-semibold text-emerald-700 mb-4">The Mathematical Model</h2>
+                    
+                    <p class="text-sm text-gray-700 font-semibold">Weight Function (Logistic Growth):</p>
+                    <p class="text-sm text-gray-600 mb-2">Calculates total chicken weight \( f(x) \) in grams on day \( x \).</p>
+                    <div class="math-container bg-gray-50 p-3 rounded-lg mb-4 text-center">
+                        \[ f(x) = \frac{3000}{1 + 65e^{-0.15x}} \]
+                    </div>
+
+                    <p class="text-sm text-gray-700 font-semibold">Derivative Function (Rate of Change):</p>
+                    <p class="text-sm text-gray-600 mb-2">Calculates the <strong>Daily Weight Gain</strong> \( f'(x) \) in grams/day.</p>
+                    <div class="math-container bg-gray-50 p-3 rounded-lg text-center">
+                        \[ f'(x) = \frac{29250e^{-0.15x}}{(1 + 65e^{-0.15x})^2} \]
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column: Interactive Chart and Analysis -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Chart Area -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-emerald-100 relative">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold text-emerald-700">Growth Curve Animation</h2>
+                        <span class="animate-pulse bg-emerald-100 text-emerald-800 text-xs font-medium px-2.5 py-0.5 rounded border border-emerald-200">
+                            👆 Click a point on the line!
+                        </span>
+                    </div>
+                    <div class="relative h-[400px] w-full">
+                        <canvas id="growthChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Dynamic Analysis Panel -->
+                <div id="analysisPanel" class="bg-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all duration-300 transform scale-100">
+                    <div class="text-center">
+                        <p class="text-emerald-100 text-sm font-medium tracking-wide uppercase">Interactive Derivative Analysis</p>
+                        <h3 class="text-2xl font-bold mt-2">Click on the graph to analyze a specific day.</h3>
+                        <p class="text-emerald-200 mt-2">The application will calculate the exact rate of change at your selected point.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mathematical Functions
+        // Weight function f(x)
+        function calculateWeight(day) {
+            return 3000 / (1 + 65 * Math.exp(-0.15 * day));
+        }
+
+        // Derivative function f'(x) - Daily Weight Gain
+        function calculateDerivative(day) {
+            const numerator = 29250 * Math.exp(-0.15 * day);
+            const denominator = Math.pow((1 + 65 * Math.exp(-0.15 * day)), 2);
+            return numerator / denominator;
+        }
+
+        // Generate Data Arrays
+        const days = Array.from({length: 46}, (_, i) => i); // Days 0 to 45
+        const weights = days.map(day => calculateWeight(day));
+
+        // Initialize Chart.js
+        const ctx = document.getElementById('growthChart').getContext('2d');
+        
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(16, 185, 129, 0.5)'); // Emerald 500
+        gradient.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+
+        const growthChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: days,
+                datasets: [{
+                    label: 'Total Weight f(x) (grams)',
+                    data: weights,
+                    borderColor: '#10b981', // Emerald 500
+                    backgroundColor: gradient,
+                    borderWidth: 3,
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderColor: '#047857',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 8,
+                    fill: true,
+                    tension: 0.4 // Smooth curve
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    duration: 2500, // Draw animation duration
+                    easing: 'easeOutQuart'
+                },
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    tooltip: {
+                        backgroundColor: 'rgba(6, 78, 59, 0.9)', // Dark emerald
+                        titleFont: { size: 14, family: 'Inter' },
+                        bodyFont: { size: 14, family: 'Inter' },
+                        callbacks: {
+                            label: function(context) {
+                                return `Weight: ${context.parsed.y.toFixed(1)} grams`;
+                            }
+                        }
+                    },
+                    legend: {
+                        position: 'top',
+                        labels: { font: { family: 'Inter' } }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Time x (Days)', font: { size: 14, weight: 'bold' } },
+                        grid: { display: false }
+                    },
+                    y: {
+                        title: { display: true, text: 'Weight f(x) (Grams)', font: { size: 14, weight: 'bold' } },
+                        grid: { color: '#e5e7eb' },
+                        suggestedMax: 3200
+                    }
+                },
+                onClick: (e) => {
+                    const canvasPosition = Chart.helpers.getRelativePosition(e, growthChart);
+                    const dataX = growthChart.scales.x.getValueForPixel(canvasPosition.x);
+                    
+                    if(dataX >= 0 && dataX <= 45) {
+                        const dayIndex = Math.round(dataX);
+                        updateAnalysisPanel(dayIndex);
+                    }
+                }
+            }
+        });
+
+        // Function to update the analysis panel dynamically
+        function updateAnalysisPanel(day) {
+            const weight = calculateWeight(day).toFixed(1);
+            const rate = calculateDerivative(day).toFixed(1);
+            
+            // Determine layman explanation based on biological growth phase
+            let phaseTitle = "";
+            let explanation = "";
+            
+            if (day < 14) {
+                phaseTitle = "Starter Phase (Slow Initial Growth)";
+                explanation = `At day ${day}, the chick is establishing its bone structure and internal organs. The derivative (growth rate) is low at <strong>${rate} grams/day</strong>. While it's growing, it hasn't reached its rapid meat-producing phase yet.`;
+            } else if (day >= 14 && day <= 32) {
+                phaseTitle = "Grower/Finisher Phase (Exponential Growth)";
+                explanation = `Look at the math! At day ${day}, the slope is incredibly steep. The derivative reveals a massive weight gain of <strong>${rate} grams/day</strong>. This is the optimal window where the chicken is converting feed into meat most efficiently.`;
+            } else {
+                phaseTitle = "Maturation (Diminishing Returns)";
+                explanation = `At day ${day}, the curve flattens. The derivative has dropped to <strong>${rate} grams/day</strong>. From a food security and economic standpoint, keeping the chicken past this point wastes feed, as the rate of return (weight gain) is steadily decreasing. Time to harvest!`;
+            }
+
+            const panel = document.getElementById('analysisPanel');
+            
+            // Add a quick visual pop effect
+            panel.classList.remove('scale-100');
+            panel.classList.add('scale-[0.98]', 'bg-emerald-800');
+            
+            setTimeout(() => {
+                panel.innerHTML = `
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-emerald-600 pb-4 mb-4 gap-4">
+                        <div>
+                            <span class="bg-emerald-900 text-emerald-100 text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Day ${day} Analysis</span>
+                            <h3 class="text-2xl font-bold mt-2 text-white">${phaseTitle}</h3>
+                        </div>
+                        <div class="text-right text-emerald-100">
+                            <p>Current Weight: <strong class="text-white text-xl">${weight}g</strong></p>
+                            <p class="text-sm italic">f(${day})</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl p-4 text-emerald-900 shadow-inner flex flex-col md:flex-row gap-4 items-center">
+                        <div class="flex-shrink-0 text-center bg-emerald-100 p-4 rounded-lg">
+                            <p class="text-xs font-semibold text-emerald-700 uppercase">Rate of Change f'(${day})</p>
+                            <p class="text-3xl font-black text-emerald-600">+${rate} <span class="text-sm font-normal text-emerald-800">g/day</span></p>
+                        </div>
+                        <div class="flex-grow">
+                            <p class="text-sm leading-relaxed text-gray-700">
+                                <strong>Layman's Interpretation:</strong> ${explanation}
+                            </p>
+                        </div>
+                    </div>
+                `;
+                panel.classList.remove('scale-[0.98]', 'bg-emerald-800');
+                panel.classList.add('scale-100');
+            }, 150);
+        }
+    </script>
+</body>
+</html>
